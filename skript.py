@@ -5,6 +5,7 @@ import sys
 import sqlite3
 import schedule
 import time
+from datetime import datetime
 import dotenv
 dotenv.load_dotenv()
 import get_link
@@ -13,6 +14,7 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))  # absolute
 db_file = "panic.db"
 url = f"https://cryptopanic.com/api/v1/posts/"
 def job():
+    print(f"job started: {datetime.now()}")
     for p in range(1, 200, 1):
         print(f"page: {p}")
         params = {
@@ -53,7 +55,9 @@ def job():
             break
 
 
-schedule.every().hour.do(job) 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# schedule.every().hour.do(job) 
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
+
+job()
