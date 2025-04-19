@@ -55,9 +55,9 @@ def job():
             break
 
 
-# schedule.every().hour.do(job) 
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+schedule.every().hour.at(":00").do(job) 
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 
-job()
+# job()
