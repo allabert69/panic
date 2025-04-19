@@ -10,6 +10,7 @@ import torch.nn.functional as F
 import time
 import os
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))  # absolute location
+model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 options = Options()
 options.add_argument("--headless")
@@ -18,8 +19,9 @@ options.add_argument("--no-sandbox")
 options.add_argument("enable-automation")
 options.add_argument("--disable-infobars")
 options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--enable-unsafe-swiftshader")
 
-model_name = f"{root_path}/sentiment-roberta-large-english"
+model_name = f"{model_path}/sentiment-roberta-large-english"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
@@ -43,7 +45,7 @@ def main(url):
     driver = webdriver.Chrome(options=options)
     driver.get(url)
     try:
-        element = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
+        element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
     except:
         driver.quit()
         time.sleep(1)
@@ -54,7 +56,7 @@ def main(url):
         options.add_argument("--headless")
     driver.execute_script("arguments[0].scrollIntoView();", element)
     element.click()
-    WebDriverWait(driver, 5).until(EC.number_of_windows_to_be(3))
+    WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(3))
     driver.switch_to.window(driver.window_handles[-1])
     current_url = driver.current_url
     print(current_url)
@@ -62,6 +64,3 @@ def main(url):
     sentiment = geet_sentiment(current_url)
     print(sentiment)
     return current_url, sentiment[0], sentiment[1]
-
-
-

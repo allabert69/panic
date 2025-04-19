@@ -1,15 +1,15 @@
 import pandas as pd
 import requests
 import os
-import get_link
 import sqlite3
 import dotenv
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))  # absolute location
 dotenv.load_dotenv()
+import get_link
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))  # absolute location
 
 db_file = "panic.db"
 url = f"https://cryptopanic.com/api/v1/posts/"
-for p in range(1,200,1):
+for p in range(1, 200, 1):
     print(f"page: {p}")
     params = {
         "auth_token": os.environ.get("api_key"),

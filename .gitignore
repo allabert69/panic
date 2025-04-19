@@ -1,4 +1,4 @@
-/.venv
-/sentiment-roberta-large-english
+/__pycache__/
+/.venv/
 .env
 /panic.db
