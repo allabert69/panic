@@ -8,9 +8,18 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import torch.nn.functional as F
 import time
+import logging
 import os
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))  # absolute location
 model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(name)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    filename='log.log'
+    )
+logging.getLogger(__name__)
 
 options = Options()
 options.add_argument("--headless")
@@ -26,7 +35,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 
-def geet_sentiment(link):
+def get_sentiment(link):
     loader = WebBaseLoader(link)
     docs = loader.load()
     text = [t.page_content for t in docs]
@@ -46,7 +55,9 @@ def main(url):
     driver.get(url)
     try:
         element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
-    except:
+    except Exception as e:
+        logging.info(f"Error: {e}")
+        logging.info("Browswer opened!")
         driver.quit()
         time.sleep(1)
         options.arguments.remove("--headless")
@@ -60,7 +71,9 @@ def main(url):
     driver.switch_to.window(driver.window_handles[-1])
     current_url = driver.current_url
     print(current_url)
+    logging.info(f"{current_url}")
     driver.quit()
-    sentiment = geet_sentiment(current_url)
+    sentiment = get_sentiment(current_url)
     print(sentiment)
+    logging.info(f"{sentiment}")
     return current_url, sentiment[0], sentiment[1]
