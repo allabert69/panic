@@ -26,16 +26,25 @@ url = f"https://cryptopanic.com/api/v1/posts/"
 def job():
     print(f"job started: {datetime.now()}")
     logging.info(f"job started: {datetime.now()}")
-    for p in range(1, 200, 1):
+    count = 0
+    for p in range(1, 100, 1):  
         print(f"page: {p}")
         logging.info(f"page: {p}")
+
         params = {
             "auth_token": os.environ.get("api_key"),
             "currencies": "BTC,BNB,Bitcoin,bitcoin",
             "kind": 'news',
             "page": p
         }
-        response = requests.get(url, params=params)
+        try:
+            response = requests.get(url, params=params)
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed: {e}")
+            logging.info(f"Request failed: {e}")
+            print(response.json())
+            logging.info(f"{response.json()}")
+            break
         if response.status_code != 200:
             print(f"cryptopanic.com Error: {response.status_code}")
             logging.info(f"cryptopanic.com Error: {response.status_code}")
@@ -47,11 +56,12 @@ def job():
 
             with sqlite3.connect(db_file) as conn:
                 cur = conn.cursor()
-                cur.execute("SELECT id FROM articles")
+                cur.execute("SELECT id FROM articles where sent_1 IS NOT NULL")
                 idx = cur.fetchall()
                 idx = [i[0] for i in idx]
 
-            df = df[~df['id'].isin(idx)]
+            df = df[~df['id'].isin(idx)].reset_index(drop=True)
+            df = df.dropna(subset="url").reset_index(drop=True)
             print(f"cryptopanic shape: {df.shape}")
             logging.info(f"cryptopanic shape: {df.shape}")
             if not df.empty:
@@ -70,8 +80,15 @@ def job():
                 with sqlite3.connect(db_file) as conn:
                     df.to_sql('articles', con=conn, if_exists='append', index=False)
             else:
-                break
-    logging.info(f"job succecc!: {datetime.now()}")
+                count += 1
+                print(f"zero count: {count}")
+                logging.info(f"zero count: {count}")
+                if count < 10:
+                    continue
+                else:
+                    break
+    logging.info(f"job success!: {datetime.now()}")
+    logging.info("---------------------------")
 
 
 schedule.every().day.at("03:05").do(job)

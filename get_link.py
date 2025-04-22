@@ -10,6 +10,7 @@ import torch.nn.functional as F
 import time
 import logging
 import os
+import sys
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))  # absolute location
 model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -36,8 +37,11 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 
 def get_sentiment(link):
-    loader = WebBaseLoader(link)
-    docs = loader.load()
+    try:
+        loader = WebBaseLoader(link)
+        docs = loader.load()
+    except:
+        return [None, None]
     text = [t.page_content for t in docs]
     text = ". ".join(text)
 
@@ -51,10 +55,24 @@ def get_sentiment(link):
 
 
 def main(url):
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
+    tag = True
+    count = 0
+    while tag:
+        try:
+            driver = webdriver.Chrome(options=options)
+            driver.get(url)
+            tag = False
+        except Exception as e :
+            print(f"Error: {e}")
+            driver.quit()
+            count +=1
+            if count < 10:
+                time.sleep(1)
+                continue
+            else:
+                sys.exit("Error: 10 attempts to open the browser failed.")
     try:
-        element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
+        element = WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
     except Exception as e:
         logging.info(f"Error: {e}")
         logging.info("Browswer opened!")
@@ -63,11 +81,11 @@ def main(url):
         options.arguments.remove("--headless")
         driver = webdriver.Chrome(options=options)
         driver.get(url)
-        element = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
+        element = WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
         options.add_argument("--headless")
     driver.execute_script("arguments[0].scrollIntoView();", element)
     element.click()
-    WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(3))
+    WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(3))
     driver.switch_to.window(driver.window_handles[-1])
     current_url = driver.current_url
     print(current_url)
