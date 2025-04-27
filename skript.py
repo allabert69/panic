@@ -37,19 +37,31 @@ def job():
             "kind": 'news',
             "page": p
         }
-        try:
-            response = requests.get(url, params=params)
-        except requests.exceptions.RequestException as e:
-            print(f"Request failed: {e}")
-            logging.info(f"Request failed: {e}")
-            print(response.json())
-            logging.info(f"{response.json()}")
+        count_panic = 0
+        tag = True
+        while tag:
+            try:
+                response = requests.get(url, params=params)
+                if response.status_code != 200:
+                    print(f"cryptopanic.com Error: {response.status_code} {response.reason}")
+                    logging.info(f"cryptopanic.com Error: {response.status_code} {response.reason}")
+                    time.sleep(1)
+                    count_panic += 1  
+                else:
+                    tag = False                                                                            
+            except requests.exceptions.RequestException as e:
+                print(f"Request failed: {e}")
+                logging.info(f"Request failed: {e}")
+                print(response.json())
+                logging.info(f"{response.json()}")
+                count_panic += 1
+            if count_panic > 10:
+                break
+        if count_panic > 10:
+            print("cryptopanic.com Error: 10 times")
+            logging.info("cryptopanic.com Error: 10 times")
             break
-        if response.status_code != 200:
-            print(f"cryptopanic.com Error: {response.status_code}")
-            logging.info(f"cryptopanic.com Error: {response.status_code}")
-            break
-        else:
+        else: 
             data = response.json()
             results = data['results']
             df = pd.DataFrame(results)
@@ -75,10 +87,11 @@ def job():
                     el = cols.pop(cols.index(v))
                     cols.insert(i, el)
                 df = df.reindex(columns=cols)
-
                 df[["link", "sent_0", "sent_1"]] = df.apply(lambda x: get_link.main(x["url"]), axis=1, result_type="expand")
-                with sqlite3.connect(db_file) as conn:
-                    df.to_sql('articles', con=conn, if_exists='append', index=False)
+                df = df.dropna(subset="sent_1").reset_index(drop=True)
+                if not df.empty:
+                    with sqlite3.connect(db_file) as conn:
+                        df.to_sql('articles', con=conn, if_exists='append', index=False)
             else:
                 count += 1
                 print(f"zero count: {count}")
@@ -89,6 +102,8 @@ def job():
                     break
     logging.info(f"job success!: {datetime.now()}")
     logging.info("---------------------------")
+    print(f"job success!: {datetime.now()}")
+    print("---------------------------")
 
 
 schedule.every().day.at("03:05").do(job)

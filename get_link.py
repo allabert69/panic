@@ -44,14 +44,18 @@ def get_sentiment(link):
         return [None, None]
     text = [t.page_content for t in docs]
     text = ". ".join(text)
-
-    inputs = tokenizer(text, return_tensors="pt", padding='max_length', truncation=True, max_length=512)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        logits = outputs.logits
-        # predicted_class = torch.argmax(logits, dim=1).item()
-        probabilities = F.softmax(logits, dim=1)
-    return probabilities.tolist()[0]
+    try:
+        inputs = tokenizer(text, return_tensors="pt", padding='max_length', truncation=True, max_length=512)
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            # predicted_class = torch.argmax(logits, dim=1).item()
+            probabilities = F.softmax(logits, dim=1)
+        return probabilities.tolist()[0]
+    except Exception as e:
+        print(f"Error: {e}")
+        logging.info(f"Error: {e}")
+        return [None, None]
 
 
 def main(url):
@@ -70,7 +74,7 @@ def main(url):
                 time.sleep(1)
                 continue
             else:
-                sys.exit("Error: 10 attempts to open the browser failed.")
+                return [None, None, None]
     try:
         element = WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
     except Exception as e:
@@ -81,11 +85,23 @@ def main(url):
         options.arguments.remove("--headless")
         driver = webdriver.Chrome(options=options)
         driver.get(url)
-        element = WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
-        options.add_argument("--headless")
+        try:
+            element = WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
+            options.add_argument("--headless")
+        except:
+            logging.info("Error: Element not found")
+            driver.quit()
+            options.add_argument("--headless")
+            return [None, None, None]
+    
     driver.execute_script("arguments[0].scrollIntoView();", element)
     element.click()
-    WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(3))
+    try:
+        WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(2))
+    except:
+        print("Tabs 3")
+        logging.info("Tabs 3")
+        WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(3))
     driver.switch_to.window(driver.window_handles[-1])
     current_url = driver.current_url
     print(current_url)
