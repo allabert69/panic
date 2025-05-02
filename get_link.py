@@ -23,7 +23,7 @@ logging.basicConfig(
 logging.getLogger(__name__)
 
 options = Options()
-options.add_argument("--headless")
+# options.add_argument("--headless")
 options.add_argument("--disable-gpu")
 options.add_argument("--no-sandbox")
 options.add_argument("enable-automation")
@@ -82,16 +82,16 @@ def main(url):
         logging.info("Browswer opened!")
         driver.quit()
         time.sleep(1)
-        options.arguments.remove("--headless")
+        # options.arguments.remove("--headless")
         driver = webdriver.Chrome(options=options)
         driver.get(url)
         try:
             element = WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="detail_pane"]/div[@class="post-header"]/h1/a[2]/span[@class="icon icon-link-external"]')))
-            options.add_argument("--headless")
+            # options.add_argument("--headless")
         except:
             logging.info("Error: Element not found")
             driver.quit()
-            options.add_argument("--headless")
+            # options.add_argument("--headless")
             return [None, None, None]
     
     driver.execute_script("arguments[0].scrollIntoView();", element)

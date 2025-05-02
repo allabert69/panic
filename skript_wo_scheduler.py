@@ -106,17 +106,17 @@ def job():
     print("---------------------------")
 
 
-schedule.every().day.at("03:05").do(job)
-schedule.every().day.at("06:05").do(job)
-schedule.every().day.at("09:05").do(job)
-schedule.every().day.at("12:05").do(job)
-schedule.every().day.at("15:05").do(job)
-schedule.every().day.at("18:05").do(job)
-schedule.every().day.at("21:05").do(job)
-schedule.every().day.at("00:05").do(job)
+# schedule.every().day.at("03:05").do(job)
+# schedule.every().day.at("06:05").do(job)
+# schedule.every().day.at("09:05").do(job)
+# schedule.every().day.at("12:05").do(job)
+# schedule.every().day.at("15:05").do(job)
+# schedule.every().day.at("18:05").do(job)
+# schedule.every().day.at("21:05").do(job)
+# schedule.every().day.at("00:05").do(job)
 
-while True:
-    schedule.run_pending()
-    time.sleep(300)
+# while True:
+#     schedule.run_pending()
+#     time.sleep(300)
 
 job()
