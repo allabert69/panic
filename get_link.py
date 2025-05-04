@@ -96,12 +96,18 @@ def main(url):
     
     driver.execute_script("arguments[0].scrollIntoView();", element)
     element.click()
-    try:
-        WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(2))
-    except:
-        print("Tabs 3")
-        logging.info("Tabs 3")
-        WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(3))
+    tag = True
+    count = 0
+    while tag:
+        try:
+            WebDriverWait(driver, 15).until(EC.number_of_windows_to_be(2))
+            tag = False
+        except Exception as e:
+            print(e)
+            logging.info(e)
+            count += 1
+            if count > 10:
+                return [current_url, None, None]
     driver.switch_to.window(driver.window_handles[-1])
     current_url = driver.current_url
     print(current_url)
