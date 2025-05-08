@@ -21,7 +21,7 @@ logging.basicConfig(
 logging.getLogger(__name__)
 
 url = f"https://cryptopanic.com/api/v1/posts/"
-
+run_count = 10
 
 def job():
     print(f"job started: {datetime.now()}")
@@ -96,7 +96,7 @@ def job():
                 count += 1
                 print(f"zero count: {count}")
                 logging.info(f"zero count: {count}")
-                if count < 10:
+                if count < run_count:
                     continue
                 else:
                     break

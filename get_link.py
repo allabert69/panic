@@ -93,9 +93,13 @@ def main(url):
             driver.quit()
             # options.add_argument("--headless")
             return [None, None, None]
-    
-    driver.execute_script("arguments[0].scrollIntoView();", element)
-    element.click()
+    try:
+        driver.execute_script("arguments[0].scrollIntoView();", element)
+        element.click()
+    except Exception as e:
+        print(e)
+        logging.info(e)
+        return [None, None, None]
     tag = True
     count = 0
     while tag:
